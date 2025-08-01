@@ -135,7 +135,7 @@
         <div class="mt-4">
           <h6>🧾 Recent Customer Purchases</h6>
           <table class="table">
-            <thead><tr><th>#</th><th>Warehouse ID</th><th>Customer</th><th>Product</th><th>Qty</th><th>Date</th></tr></thead>
+            <thead><tr><th>#</th><th>Warehouse Name</th><th>Customer</th><th>Product</th><th>Qty</th><th>Date</th></tr></thead>
             <tbody id="purchaseHistoryTable"></tbody>
           </table>
         </div>
@@ -345,10 +345,6 @@ function dispatchOrder(orderId) {
 }
 
 //purchase
-function getWarehouseNameById(id) {
-  return Promise.resolve(`Warehouse ${id}`);
-}
-
 async function loadPurchaseHistory() {
   const warehouseId = localStorage.getItem("warehouseId") || 1;
 
@@ -366,12 +362,11 @@ async function loadPurchaseHistory() {
 
     for (let i = 0; i < data.length; i++) {
       const p = data[i];
-      const warehouseName = await getWarehouseNameById(p.warehouse_id || warehouseId);
 
       tbody.innerHTML += `
         <tr>
           <td>${i + 1}</td>
-          <td>${warehouseName}</td>
+          <td>${p.warehouse_name}</td>
           <td>${p.customer_name}</td>
           <td>${p.product_name}</td>
           <td>${p.qty}</td>
