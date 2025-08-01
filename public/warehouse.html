@@ -344,30 +344,47 @@ function dispatchOrder(orderId) {
   });
 }
 
-function loadPurchaseHistory() {
+//purchase
+function getWarehouseNameById(id) {
+  return Promise.resolve(`Warehouse ${id}`);
+}
+
+async function loadPurchaseHistory() {
   const warehouseId = localStorage.getItem("warehouseId") || 1;
 
-  fetch(`https://millet-backend.onrender.com/api/warehouse/purchase-history?warehouseId=${warehouseId}`)
-    .then(res => res.json())
-    .then(data => {
-      const tbody = document.getElementById("purchaseHistoryTable");
-      if (!tbody) return;
-      tbody.innerHTML = "";
-      data.forEach((p, i) => {
-        tbody.innerHTML += `
-          <tr>
-            <td>${i + 1}</td>
-            <td>${getWarehouseNameById(p.warehouse_id || warehouseId)}</td>
-            <td>${p.customer_name}</td>
-            <td>${p.product_name}</td>
-            <td>${p.qty}</td>
-            <td>${new Date(p.purchase_date).toLocaleString()}</td>
-          </tr>`;
-      });
-    })
-    .catch(err => {
-      console.error("❌ Error loading purchase history:", err);
-    });
+  try {
+    const res = await fetch(`https://millet-backend.onrender.com/api/warehouse/purchase-history?warehouseId=${warehouseId}`);
+    const data = await res.json();
+    const tbody = document.getElementById("purchaseHistoryTable");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    if (!Array.isArray(data) || data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No purchases found.</td></tr>`;
+      return;
+    }
+
+    for (let i = 0; i < data.length; i++) {
+      const p = data[i];
+      const warehouseName = await getWarehouseNameById(p.warehouse_id || warehouseId);
+
+      tbody.innerHTML += `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${warehouseName}</td>
+          <td>${p.customer_name}</td>
+          <td>${p.product_name}</td>
+          <td>${p.qty}</td>
+          <td>${new Date(p.purchase_date).toLocaleString()}</td>
+        </tr>`;
+    }
+  } catch (err) {
+    console.error("❌ Error loading purchase history:", err);
+    const tbody = document.getElementById("purchaseHistoryTable");
+    if (tbody) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error loading data</td></tr>`;
+    }
+  }
 }
 
 function loadDispatchLog() {
