@@ -419,15 +419,23 @@ app.get('/api/warehouse/purchase-history', async (req, res) => {
 
   try {
     const [rows] = await connection.query(
-      'SELECT customer_name, product_name, qty, purchase_date FROM customer_purchases WHERE warehouse_id = ? ORDER BY purchase_date DESC LIMIT 10',
+      `SELECT cp.customer_name, cp.product_name, cp.qty, cp.purchase_date,
+              w.name AS warehouse_name
+       FROM customer_purchases cp
+       JOIN warehouses w ON cp.warehouse_id = w.id
+       WHERE cp.warehouse_id = ?
+       ORDER BY cp.purchase_date DESC
+       LIMIT 10`,
       [warehouseId]
     );
+
     res.json(rows);
   } catch (err) {
     console.error('❌ Purchase History Error:', err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 // Activity Logs API – Get Logs for a Warehouse
 app.get('/api/activity-logs', async (req, res) => {
